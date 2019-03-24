@@ -1,0 +1,22 @@
+.  	  1	    2	      3                   
+.12345678901234567890123456789012
+
+
+
+
+
+          start    100
+          lda      Fiv
+          ldx     #3
+          lds     #8
+          ldt     @25
+          addr     s,t
+         +sts      ans
+          ld     @Fiv
+          lda
+          lda     #Fiv
+          rsub
+ans       resw     8
+Fiv       word     5
+ans       resw     4
+          end
