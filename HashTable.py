@@ -1,5 +1,6 @@
 import sys
 
+tempFile = open("tempFile.txt", "w")
 
 class Data:
     data = ""
@@ -18,10 +19,7 @@ def hashFunc(word):
         i += 1
     return num
 
-
 arrOfData = [Data() for i in range(51)]  # Initializing the array to Data(None,None)
-
-
 def eachLine(line):
     data = Data(line, None)  # none= null in .py
     words = line.split()
@@ -30,7 +28,7 @@ def eachLine(line):
         if arrOfData[hf].data == None:
             arrOfData[hf] = data
             words[1].replace("\n", ' ')
-            print(words[0] + " " + words[1] + " stored at location", hf, " with 0 collision")
+            # print(words[0] + " " + words[1] + " stored at location", hf, " with 0 collision")
             return 0
         else:
             dataFetched = arrOfData[hf]  # words[0] moss 22 != moss 25
@@ -41,17 +39,18 @@ def eachLine(line):
                 wordsFetched = dataFetched.data.split()
                 coll += 1
             if wordsFetched[0] == words[0]:
-                print("^Error: Duplicate label " + words[0] + " already exist at", hf)
+                tempFile.write("^Error: Duplicate label " + words[0] + " already exist at" + str(hf) + "\n")
                 return 1
             else:
                 dataFetched.next = data
-                print(str(words) + " stored at location ", hf, "with ", coll, " collisions")
+                #print(str(words) + " stored at location ", hf, "with ", coll, " collisions")
                 return 0
     elif len(words) == 1:
         hf = hashFunc(words[0])  # getting the int hf value of the word on the line
         dataFetched = arrOfData[hf]
         if dataFetched.data == None:
-            print("Does not exist")
+            # print("Does not exist")
+            return "DNE"
         else:
             wordsFetched = dataFetched.data.split()
             while True:

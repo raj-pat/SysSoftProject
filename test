@@ -1,0 +1,19 @@
+ADDRESS    START    100
+. tests pc forward addressing
+. tests base addressing
+. tests pc backward addressing
+NOW      +LDB     #BEGIN              load base register
+XXX       BASE     BEGIN              tell assembler
+YYY       LDA      BE                 A <- (m..m+2)
+EN        RESW     4
+          ADD     =X'127'
+          ADD     =C'ABC'
+BE        WORD     2
+BEGIN     RESW     1
+          LTORG
+JUNK      RESW     2200
+          ADD     =C'3451'
+THERE     RESW     1
+ZZZ       LDA      JUNK
+MMM       STA      THERE
+          END      NOW

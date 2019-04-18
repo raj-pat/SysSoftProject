@@ -1,0 +1,17 @@
+ADDRES    START    100
+NOW      +LDB     #BE
+XXX       BASE     BEG
+          ADDR     T,P
+          CLEAR    T
+          LDX      BE
+          LDA      JUNK,X
+YYY       LDA      BEG
+          RESW     4
+BE        WORD     2
+          BASE     MMM
+BEG       RESW     1
+JUNK      RESW     2200
+THERE     RES     1
+ZZZ       LDA      JUNK
+MMM       STA      THER
+          END      BE

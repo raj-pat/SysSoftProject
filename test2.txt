@@ -3,20 +3,25 @@
 
 
 
-
-
           start    100
           lda      Fiv
           ldx     #3
           lds     #8
           ldt     @25
           addr     s,t
+          sub     =X'696969'
+          lda     =C'abc'
          +sts      ans
-          ld     @Fiv
-          lda
+          ld      @Fiv
+          lda      ghf
+          ltorg
           lda     #Fiv
+          lda     =C'OwO'
+          add     =X'6933'
           rsub
-ans       resw     8
+ans       resw     4
+abyt      BYTE     2
+ksdf      resb     2
 Fiv       word     5
 ans       resw     4
           end
