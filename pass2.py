@@ -1,3 +1,5 @@
+import os
+
 from pass1 import *
 
 
@@ -33,10 +35,16 @@ def negBin(negHex):  # NOTE only converts a NEGATIVE(-0x) hex number to binary
     return hex(int(newBin[::-1], 2))
 
 
-print("********************************************************")
+
 p1File = open("tempFile.txt")
+objFile = open(sys.argv[1] + ".obj", "w")
+lstFile = open(sys.argv[1] + ".lst", "w")
 LDBreg = "none"
-print('{0:6} {1:12} {2:12} {3:12} {4:12}\n'.format("Loc", "ObjCode", "Label", "Instrut", "Operand"))
+lstFile.write("********************************************************\n\n")
+lstFile.write("SIC/XE ASSEMBLER BY RAJ PATEL N01394161\n\n")
+lstFile.write("********************************************************\n")
+lstFile.write('{0:6} {1:12} {2:12} {3:12} {4:12}\n'.format("Loc", "ObjCode", "Label", "Instrut", "Operand"))
+lstFile.write('{0:6} {1:12} {2:12} {3:12} {4:12}\n'.format("---", "-------", "-----", "-------", "-------"))
 
 # for each line in pass1 file
 for line in p1File:
@@ -47,16 +55,35 @@ for line in p1File:
     instruction = line[24:32].strip()
     operand1 = line[33:45].strip()
     operand = operand1
-    errorOnLine = False  # {boolean, errorType}
+    errorOnLine = False
+
 
     # print(lineAddr + " " + opCode + " " + format + " " + label + " " + instruction + " " +
     #               operand)
+    if instruction == "RESW":
+        objFile.write("!\n")
+        reswEndAdd = hex(int(lineAddr, 16) + (int(format, 16)) * (int(operand)))
+        objFile.write(reswEndAdd[2:].upper().zfill(6) + "\n")
+        if lineAddr == lastReswAddr.upper():
+            objFile.write(StartAdd.zfill(6) + "\n")
+        else:
+            objFile.write("000000\n")
+
     if lineAddr == "^Error:":  # Error from pass 1
-        print(line.strip().upper())
+        lstFile.write(line.strip().upper() + "\n")
     elif opCode == "N":
-        print('{0:6} {1:12} {2:12} {3:12} {4:12}'.format(lineAddr, "", label, instruction, operand1))
+        lstFile.write('{0:6} {1:12} {2:12} {3:12} {4:12}\n'.format(lineAddr, "", label, instruction, operand1))
     elif label == "literal":
-        print(line.strip())
+        objCode = ""
+        if operand[0] == 'C':
+            for letter in operand[2:-1]:
+                objCode += hex(ord(letter))[2:]
+        else:
+            objCode = operand[2:-1]
+        lstFile.write(
+            '{0:6} {1:12} {2:12} {3:12} {4:12}\n'.format(lineAddr, objCode.upper(), "=" + operand, instruction,
+                                                         operand1))
+
     elif format == "2":
         r2 = "0"
         if operand.find(',') != -1:
@@ -68,10 +95,20 @@ for line in p1File:
             objCode = "Error: Invalid operand"
         else:
             objCode = opCode + r1 + r2
-        print('{0:6} {1:12} {2:12} {3:12} {4:12}'.format(lineAddr, objCode.upper(), label, instruction, operand1))
+        lstFile.write(
+            '{0:6} {1:12} {2:12} {3:12} {4:12}\n'.format(lineAddr, objCode.upper(), label, instruction, operand1))
 
     elif opCode == "ZZ":
         objCode = ""
+        if instruction == "START":
+            objFile.write(operand.zfill(6) + "\n")
+            if lastReswAddr == "":
+                objFile.write(StartAdd.zfill(6) + "\n")
+            else:
+                objFile.write("000000\n")
+        if instruction == "END":
+            objFile.write("!\n")
+            objFile.close()
         if instruction == "BASE" or instruction == "+BASE":
             try:
 
@@ -81,12 +118,16 @@ for line in p1File:
                     LDBreg = symTab[operand[1:]]
                 except KeyError:
                     LDBreg = "none"
-                    print("error")
+                    lstFile.write("error\n")
         if instruction == "WORD":
             objCode = adjustDisplacement(bin(0), hex(int(operand, 16))).zfill(6)
 
-        print('{0:6} {1:12} {2:12} {3:12} {4:12}'.format(lineAddr, objCode.upper(), label, instruction, operand1))
-
+        lstFile.write(
+            '{0:6} {1:12} {2:12} {3:12} {4:12}\n'.format(lineAddr, objCode.upper(), label, instruction, operand1))
+    elif instruction == "RSUB":
+        objCode = opCode + "0000"
+        lstFile.write(
+            '{0:6} {1:12} {2:12} {3:12} {4:12}\n'.format(lineAddr, objCode.upper(), label, instruction, operand1))
     else:
         # format 3 normal statement
         # ni = 00(*), 11(Default) ,01(#) ,10(@)
@@ -161,4 +202,13 @@ for line in p1File:
         xbpe = hex(int(str(x[2:] + b[2:] + p[2:] + e[2:]), 2))
         if errorOnLine == False:
             objCode = str(ni[2:].zfill(2)) + str(xbpe[2:].zfill(1)) + str(displacement)
-        print('{0:6} {1:12} {2:12} {3:12} {4:12}'.format(lineAddr, objCode.upper(), label, instruction, operand1))
+        objFile.write(objCode.upper() + "\n")
+        lstFile.write(
+            '{0:6} {1:12} {2:12} {3:12} {4:12}\n'.format(lineAddr, objCode.upper(), label, instruction, operand1))
+p1File.close()
+objFile.close()
+lstFile.close()
+os.remove("tempFile.txt")
+os.chmod(sys.argv[1] + ".lst", 0o744)
+os.chmod(sys.argv[1] + ".obj", 0o744)
+print("SIC/XE ASSEMBLED\n\t\t GENERATED: " + sys.argv[1] + ".lst AND " + sys.argv[1] + ".obj")

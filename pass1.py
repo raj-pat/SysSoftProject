@@ -1,3 +1,5 @@
+import os
+
 from HashTable import *
 import queue
 import sys
@@ -17,6 +19,8 @@ StartAdd = None
 currAddress = None
 literalQ = queue.Queue()
 symTab = {}
+lastReswAddr = ""
+
 for line in sicFile:
     temp = line.strip()
 
@@ -24,7 +28,7 @@ for line in sicFile:
         # Splitting the line based on col
         label = line[0:7].strip().upper()  # 1-8
         instruction = line[9:16].strip().upper()  # 10-17 with '+' included
-        operand = line[18:30].strip().strip('\n').upper()  # 18-30
+        operand = line[18:30].strip().strip('\n')  # 18-30
         # print(label + " " + instruction + " " + operand) #debug
 
         if StartAdd is not None:  # None is an object; "is not" used
@@ -51,7 +55,7 @@ for line in sicFile:
                 tempFile.write(
                     '{0:6} {1:3} {2:3} {3:8} {4:8} {5:8}\n'.format(str(currAddress)[2:].upper(), retrievedData[1],
                                                                    retrievedData[2], label, instruction, operand))
-
+                lastReswAddr = str(currAddress)[2:]
                 # Insertion for Resw
                 if k == 0:
                     currAddress = hex(int(currAddress, 16) + (int(retrievedData[2], 16)) * (int(operand)))
@@ -68,7 +72,6 @@ for line in sicFile:
                                                                        "literal", "BYTE", lit[1:]))
 
                     if lit[1] == 'X':
-                        print(lit)
                         if (len(lit) - 4) % 2 == 0:
                             symTab[lit] = str(currAddress)
                             currAddress = hex(int(currAddress, 16) + int((len(lit) - 4) / 2))
@@ -89,9 +92,5 @@ for line in sicFile:
             currAddress = hex(int(operand, 16))
             if label != "":
                 symTab[label] = str(currAddress)
-print("\n\n********Symbol Table********")
-print("\tLabel\tLoc")
-for key in symTab:
-    print("%10s\t%6s" % (key, symTab[key].upper()[2:]))
-
 tempFile.close()
+# os.remove("tempFile.txt")
